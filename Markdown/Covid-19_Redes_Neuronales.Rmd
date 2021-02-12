@@ -1,0 +1,320 @@
+---
+title: "Covid-19 Machine Learning: Redes Neuronales"
+author: 
+- Alfonso Castillo Orozco, B41546
+- Luis Carlos Solano Mora, B46752
+date: "2/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Requisitos
+
+Este notebook es un R Markdown que fue desarrollado en RStudio para ser ejecutado con código en Python3. Por lo tanto, además de tener instalado Python3, se debe instalar desde la consola de RStudio o en la terminal ejecutando R la biblioteca Reticulate para ligar Python con R, mediante el comando:
+
+```{r eval=FALSE}
+install.packages("reticulate")
+```
+
+Además, se requiere instalar las siguientes bibliotecas desde Python3 con los comandos respectivos desde la terminal.
+
+-Pandas
+
+```{python eval=FALSE}
+pip3 install pandas
+```
+
+-Numpy
+
+```{python eval=FALSE}
+pip3 install numpy
+```
+
+-Matplotlib
+
+```{python eval=FALSE}
+pip3 install matplotlib
+```
+
+-Scikit Learn
+
+```{python eval=FALSE}
+pip3 install scikit-learn
+```
+
+## Introducción
+
+## Conceptos Claves
+
+### - Machine Learning
+
+### - Redes Neuronales
+
+### - Long Short-Term Memory (LSTM)
+
+### - Recurrent Neural Network (RNN)
+
+### - LSTM vs RNN
+
+![Diagrama](images/RedNeuronal.png)
+
+## Bibliotecas Implementadas
+
+### - Pandas
+
+### - Pytorch
+
+### - Keras
+
+### - TensorFlow
+
+
+## Implementación en Python
+
+A continuación se implementa el análisis de los datos en Python mediante la utilización de distintas bibliotecas. Se procede a mostrar el código fuente, así como la salida obtenida de este con una detallada descripción del mismo.
+
+### 1. Importar las bibliotecas a utilizar.
+
+
+```{python}
+import pandas as pd
+
+import numpy as np
+
+import matplotlib.pyplot as plt
+
+from sklearn.preprocessing import MinMaxScaler
+```
+
+### 2. Funciones.
+
+#### a. Cargar datos csv:
+
+Se carga el archivo csv en la variable. Retorna el data frame con las columnas de interés.
+
+```{python}
+def CargarArchivo(file):
+    #Se carga el archivo y se convierte en data frame con pandas
+    datos = pd.read_csv('../Datos/' + file)
+    datos_pd = pd.DataFrame(datos)
+    #Se eliminan las columnas con los nombres "Province/State", "Lat" y "Long"
+    datos_pd_reducidos = datos_pd.drop(['Province/State', 'Lat', 'Long'], axis=1)
+    #Retorna datos con las 3 columnas eliminadas
+    return datos_pd_reducidos
+```
+
+#### b. Seleccionar los datos de interés Acumulados:
+
+Se seleccionan los paises de interés para el análisis, con los casos acumulados.
+
+```{python}
+def SeleccionarPaisesAcumulados(datos, paises):
+    #Se establece la columna 'Country/Region' como índice
+    datos = datos.set_index('Country/Region')
+    #Se elige solo la info de los países de la lista
+    datos_paises = datos.loc[paises]
+    #Retorna datos solo de los países
+    return datos_paises
+```
+
+#### c. Generar los datos y gráficos de los datos obtenidos ACUMULADOS:
+
+Se genera una función general para analizar los datos acumulados que se tienen para hacer las predicciones.
+
+```{python}
+def Analice_archivoAcumulados(archivo, paises):
+    datos_reducidos = CargarArchivo(archivo)
+    datos_paises = SeleccionarPaisesAcumulados(datos_reducidos, paises)
+    #e. Se crea una lista con elementos desde 0 hasta el número de fechas menos 1
+    n_fechas = datos_paises.shape[1]
+    x_eje = list(range(0, n_fechas))
+    
+    #f. Se grafican los datos
+    #--Se define los posibles títulos para el gráfico
+    titulo_grafico = ''
+    if archivo=='time_series_covid19_confirmed_global.csv':
+        titulo_grafico = 'Casos Confirmados Acumulados de Covid-19'
+    elif archivo=='time_series_covid19_deaths_global.csv':
+        titulo_grafico = 'Casos de Muerte Acumulados por Covid-19'
+    elif archivo=='time_series_covid19_recovered_global.csv':
+        titulo_grafico = 'Casos Recuperados Acumulados de Covid-19'
+    
+    #--Impresiones en Consola
+    #Columnas Eliminadas
+    print("-----------------> ANÁLISIS DE DATOS: "+titulo_grafico)
+    #Países de Interés
+    print("\n--> Países seleccionados: "+str(paises))
+    print(datos_paises)    
+        
+    #--For para graficar cada país
+    for i in range(len(paises)):
+        plt.plot(x_eje, datos_paises.loc[paises[i]],label=paises[i])
+    #--Títulos del gráfico
+    plt.title(titulo_grafico)
+    plt.xlabel('Días desde el '+datos_paises.columns[0]+' hasta el '+datos_paises.columns[n_fechas-1]+'  [mes/día/año]')
+    plt.ylabel('Casos reportados')
+    plt.legend()
+    plt.show()
+    plt.close()
+    print("<----------------- FINALIZA ANÁLISIS DE DATOS <-----------------")
+```
+
+
+#### d. Generar los datos y gráficos de los datos obtenidos Diarios:
+
+Se seleccionan los paises de interés para el análisis, con los casos diarios.
+
+```{python}
+def SeleccionarPaisesDiarios(datos, paises):
+    #Se establece la columna 'Country/Region' como índice
+    datos = datos.set_index('Country/Region')
+    #Se elige solo la info de los países de la lista
+    datos_paises = datos.loc[paises]
+    #Se calculan los casos diarios apartir de una resta de los acumulados
+    datos_paises_diarios = datos_paises.diff(axis=1).fillna(datos_paises.iloc[0,0]).astype(np.int64)
+    #Retorna datos solo de los países
+    return datos_paises_diarios
+```
+
+
+
+#### e. Generar los datos y gráficos de los datos obtenidos DIARIOS:
+
+Se genera una función general para analizar los datos diarios que se tienen para hacer las predicciones.
+
+```{python}
+def Analice_archivoDiarios(archivo, paises):
+    datos_reducidos = CargarArchivo(archivo)
+    datos_paises = SeleccionarPaisesDiarios(datos_reducidos, paises)
+    #e. Se crea una lista con elementos desde 0 hasta el número de fechas menos 1
+    n_fechas = datos_paises.shape[1]
+    x_eje = list(range(0, n_fechas))
+    
+    #f. Se grafican los datos
+    #--Se define los posibles títulos para el gráfico
+    titulo_grafico = ''
+    if archivo=='time_series_covid19_confirmed_global.csv':
+        titulo_grafico = 'Casos Confirmados Diarios de Covid-19'
+    elif archivo=='time_series_covid19_deaths_global.csv':
+        titulo_grafico = 'Casos de Muerte Diarios por Covid-19'
+    elif archivo=='time_series_covid19_recovered_global.csv':
+        titulo_grafico = 'Casos Recuperados Diarios de Covid-19'
+    
+    #--Impresiones en Consola
+    #Columnas Eliminadas
+    print("-----------------> ANÁLISIS DE DATOS: "+titulo_grafico)
+    #Países de Interés
+    print("\n--> Países seleccionados: "+str(paises))
+    print(datos_paises)    
+        
+    #--For para graficar cada país
+    for i in range(len(paises)):
+        plt.plot(x_eje, datos_paises.loc[paises[i]],label=paises[i])
+    #--Títulos del gráfico
+    plt.title(titulo_grafico)
+    plt.xlabel('Días desde el '+datos_paises.columns[0]+' hasta el '+datos_paises.columns[n_fechas-1]+'  [mes/día/año]')
+    plt.ylabel('Casos reportados')
+    plt.legend()
+    plt.show()
+    plt.close()
+    print("<----------------- FINALIZA ANÁLISIS DE DATOS <-----------------")
+```
+
+
+### 3. Se imprime en consola la información para los casos confirmados, de muerte y recuperados, tanto acumulados como diarios.
+
+```{python}
+# MAIN: Se llaman todas las funciones creadas____________________________________________________________
+
+file1 = 'time_series_covid19_confirmed_global.csv' 
+file2 = 'time_series_covid19_deaths_global.csv'
+file3 = 'time_series_covid19_recovered_global.csv'
+
+#paises = ['Costa Rica', 'Panama', 'Colombia', 'Spain', 'Italy', 'Mexico', 'Germany']
+paises = ['Costa Rica']
+
+```
+
+### Archivo 1 (Casos Confirmados): “time_series_covid19_confirmed_global.csv”
+```{python}
+Analice_archivoAcumulados(file1, paises)
+Analice_archivoDiarios(file1,paises)
+```
+
+### Archivo 2 (Casos de Muerte): “time_series_covid19_deaths_global.csv”
+```{python}
+Analice_archivoAcumulados(file2, paises)
+Analice_archivoDiarios(file2,paises)
+```
+
+### Archivo 3 (Casos Recuperados): “time_series_covid19_recovered_global.csv”
+```{python}
+Analice_archivoAcumulados(file3, paises)
+Analice_archivoDiarios(file3,paises)
+```
+
+### 4. Análisis con Redes Neuronales.
+
+En esta sección se procede a implementar una Red Neuronal. Primero se seleccionan los datos para entrenar a la red neuronal, por lo tanto del total de días que son 379, se seleccionan los primeros 300 días para entrenar la red neuronal y con esto se proyectan los siguientes 79 días para posteriormente comparar este pronóstico con los datos reales.
+
+```{python}
+
+#Días a excluir de los datos reales
+dias_pronostico = 79
+
+datos_pais = SeleccionarPaisesAcumulados(CargarArchivo(file1), paises).iloc[0]
+
+#Datos para entrenar la red neuronal, se omiten los últimos días_pronostico
+datos_entrenar = SeleccionarPaisesAcumulados(CargarArchivo(file1), paises).iloc[0,:-dias_pronostico]
+#Datos reales para prueba del pronóstico
+datos_prueba = SeleccionarPaisesAcumulados(CargarArchivo(file1), paises).iloc[0,-dias_pronostico:]
+
+#Se imprimen los datos resultantes para entrenar
+print(datos_entrenar)
+#datos_entrenar.shape
+
+#Se imprimen los datos resultantes para prueba
+print(datos_prueba)
+
+```
+
+Una forma recomendada de optimizar el proceso de entrenamiento es utilizar datos que estén entre un margen de 0 a 1, es por ello que los casos se escalan dentro de este margen.
+
+```{python}
+escala = MinMaxScaler()
+escala = escala.fit(np.expand_dims(datos_pais, axis = 1))
+
+datos_entrenar_escalado = escala.transform(np.expand_dims(datos_entrenar, axis = 1))
+
+datos_prueba_escalado = escala.transform(np.expand_dims(datos_prueba, axis = 1))
+
+#Se imprimen los datos resultantes para entrenar escalados
+print(datos_entrenar_escalado)
+#datos_entrenar.shape
+
+#Se imprimen los datos resultantes para prueba escalados
+print(datos_prueba_escalado)
+
+```
+
+
+
+#### Referencias
+
+\[1] Saffa, F. (2020). "Exploring the Link between COVID-19 and Depression using Neural Networks". Recuperado de: https://towardsdatascience.com/exploring-the-link-between-covid-19-and-depression-using-neural-networks-469030112d3d
+
+\[2] COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University. Recuperado de: https://github.com/CSSEGISandData/COVID-19  
+
+\[3] Dong E, Du H, Gardner L. An interactive web-based dashboard to track COVID-19 in real time. Lancet Inf Dis. 20(5):533-534. doi: 10.1016/S1473-3099(20)30120-1
+
+Referencia general sobre RNN vs LSTM(No usada en código):
+https://medium.com/microsoftazure/neural-networks-for-forecasting-financial-and-economic-time-series-6aca370ff412
+
+TensorFlow Time series forecasting:
+https://www.tensorflow.org/tutorials/structured_data/time_series
+
+Profe en clase:
+https://www.analyticsvidhya.com/blog/2018/02/time-series-forecasting-methods/
