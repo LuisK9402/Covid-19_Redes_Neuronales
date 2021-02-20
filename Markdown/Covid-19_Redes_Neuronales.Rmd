@@ -45,6 +45,18 @@ pip3 install matplotlib
 pip3 install scikit-learn
 ```
 
+-Tensorflow
+
+En la terminal se instala la dependencia Testtresources:
+```{python eval=FALSE}
+sudo apt install python3-testresources
+```
+
+Luego, se instala Tensorflow con el siguiente comando:
+```{python eval=FALSE}
+pip3 install tensorflow
+```
+
 ## Introducción
 
 ## Conceptos Claves
@@ -87,6 +99,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.preprocessing import MinMaxScaler
+
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, LSTM
+
 ```
 
 ### 2. Funciones.
@@ -260,6 +277,8 @@ Analice_archivoDiarios(file3,paises)
 
 En esta sección se procede a implementar una Red Neuronal. Primero se seleccionan los datos para entrenar a la red neuronal, por lo tanto del total de días que son 379, se seleccionan los primeros 300 días para entrenar la red neuronal y con esto se proyectan los siguientes 79 días para posteriormente comparar este pronóstico con los datos reales.
 
+#### 4.1 Selecionar datos para entrenar y datos de prueba 
+
 ```{python}
 
 #Días a excluir de los datos reales
@@ -281,6 +300,8 @@ print(datos_prueba)
 
 ```
 
+#### 4.2 Escalar los datos seleccionados
+
 Una forma recomendada de optimizar el proceso de entrenamiento es utilizar datos que estén entre un margen de 0 a 1, es por ello que los casos se escalan dentro de este margen.
 
 ```{python}
@@ -299,6 +320,82 @@ print(datos_entrenar_escalado)
 print(datos_prueba_escalado)
 
 ```
+#### 4.3 Disponer los datos en arreglos 3-D como entrada LSTM 
+
+Ahora se deben acomodar los datos en un array 3D para poder ser utilizados como el input del modelo LSTM a crear.
+
+```{python}
+#Se crean las listas para almacenar los datos
+entrenar_list = []
+prueba_list = []
+
+#Se ingresan los datos para entrenamiento y prueba a las listas correspondientes
+for i in range(len(datos_entrenar_escalado)):
+    entrenar_list.append(datos_entrenar_escalado[i,0])
+
+for i in range(len(datos_prueba_escalado)):
+    prueba_list.append(datos_prueba_escalado[i,0])
+
+#Se convierten las listas en array 1-Dimensión
+entrenar_array = np.array(entrenar_list)
+prueba_array = np.array(prueba_list)
+print(entrenar_array.shape) #Se comprueba que es un array 1D
+print(prueba_array.shape) #Se comprueba que es un array 1D
+
+#Se convierten los array 1-D a 3-Dimensiones para el input del formato LSTM
+entrenar_array = np.reshape(entrenar_array, (1, entrenar_array.shape[0], 1))
+prueba_array = np.reshape(prueba_array, (1, prueba_array.shape[0], 1))
+print(entrenar_array.shape) #Se comprueba que es un array 3D
+print(prueba_array.shape) #Se comprueba que es un array 3D
+
+```
+
+#### 4.4 Creación del modelo LSTM
+
+```{python}
+#Inicialización del modelo
+model = Sequential()
+
+#Se agrega una capa interna LSTM 
+#model.add(LSTM(units=30, return_sequences=True, input_shape=(entrenar_array.shape[0], 1)))
+model.add(LSTM(units=30, return_sequences=True, input_shape=(300, 1)))
+
+#_________________________________________________________________________________________________
+#-Es posible agregar más capas internas LSTM pero incrementa el tiempo de entrenamiento, aunque puede mejorar aproximación
+#-Además, entre más capas internas en la red, nos adentramos en el campo del Deep Learning
+
+model.add(Dropout(0.2)) #Evita que se traslapen las capas, en caso de haber más de una
+
+#-Capa 2 LSTM
+model.add(LSTM(units=30, return_sequences=True))
+model.add(Dropout(0.2))
+
+#-Capa 3 LSTM
+model.add(LSTM(units=30, return_sequences=True))
+model.add(Dropout(0.2))
+#_________________________________________________________________________________________________
+
+#Se agrega la capa externa de salida
+model.add(Dense(units=1)) #1: La salida esperada en de una dimensión/Dense une los varios layers o capas
+
+```
+
+#### 4.5 Compilar/optimizar modelo LSTM
+
+
+
+
+#### 4.6 Predicción de datos
+
+
+
+
+#### 4.7 Test de los datos reales con los aproximados
+
+
+
+
+
 
 
 

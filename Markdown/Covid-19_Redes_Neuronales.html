@@ -394,6 +394,11 @@ summary {
 <pre class="python"><code>pip3 install matplotlib</code></pre>
 <p>-Scikit Learn</p>
 <pre class="python"><code>pip3 install scikit-learn</code></pre>
+<p>-Tensorflow</p>
+<p>En la terminal se instala la dependencia Testtresources:</p>
+<pre class="python"><code>sudo apt install python3-testresources</code></pre>
+<p>Luego, se instala Tensorflow con el siguiente comando:</p>
+<pre class="python"><code>pip3 install tensorflow</code></pre>
 </div>
 <div id="introducción" class="section level2">
 <h2>Introducción</h2>
@@ -446,7 +451,11 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from sklearn.preprocessing import MinMaxScaler</code></pre>
+from sklearn.preprocessing import MinMaxScaler
+
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, LSTM</code></pre>
 </div>
 <div id="funciones." class="section level3">
 <h3>2. Funciones.</h3>
@@ -654,6 +663,8 @@ paises = [&#39;Costa Rica&#39;]</code></pre>
 <div id="análisis-con-redes-neuronales." class="section level3">
 <h3>4. Análisis con Redes Neuronales.</h3>
 <p>En esta sección se procede a implementar una Red Neuronal. Primero se seleccionan los datos para entrenar a la red neuronal, por lo tanto del total de días que son 379, se seleccionan los primeros 300 días para entrenar la red neuronal y con esto se proyectan los siguientes 79 días para posteriormente comparar este pronóstico con los datos reales.</p>
+<div id="selecionar-datos-para-entrenar-y-datos-de-prueba" class="section level4">
+<h4>4.1 Selecionar datos para entrenar y datos de prueba</h4>
 <pre class="python"><code>
 #Días a excluir de los datos reales
 dias_pronostico = 79
@@ -695,6 +706,9 @@ print(datos_entrenar)
 ## 2/2/21      195009
 ## 2/3/21      195537
 ## Name: Costa Rica, Length: 79, dtype: int64</code></pre>
+</div>
+<div id="escalar-los-datos-seleccionados" class="section level4">
+<h4>4.2 Escalar los datos seleccionados</h4>
 <p>Una forma recomendada de optimizar el proceso de entrenamiento es utilizar datos que estén entre un margen de 0 a 1, es por ello que los casos se escalan dentro de este margen.</p>
 <pre class="python"><code>escala = MinMaxScaler()
 escala = escala.fit(np.expand_dims(datos_pais, axis = 1))
@@ -1088,6 +1102,73 @@ print(datos_entrenar_escalado)
 ##  [0.99504953]
 ##  [0.99729974]
 ##  [1.        ]]</code></pre>
+</div>
+<div id="disponer-los-datos-en-arreglos-3-d-como-entrada-lstm" class="section level4">
+<h4>4.3 Disponer los datos en arreglos 3-D como entrada LSTM</h4>
+<p>Ahora se deben acomodar los datos en un array 3D para poder ser utilizados como el input del modelo LSTM a crear.</p>
+<pre class="python"><code>#Se crean las listas para almacenar los datos
+entrenar_list = []
+prueba_list = []
+
+#Se ingresan los datos para entrenamiento y prueba a las listas correspondientes
+for i in range(len(datos_entrenar_escalado)):
+    entrenar_list.append(datos_entrenar_escalado[i,0])
+
+for i in range(len(datos_prueba_escalado)):
+    prueba_list.append(datos_prueba_escalado[i,0])
+
+#Se convierten las listas en array 1-Dimensión
+entrenar_array = np.array(entrenar_list)
+prueba_array = np.array(prueba_list)
+print(entrenar_array.shape) #Se comprueba que es un array 1D</code></pre>
+<pre><code>## (300,)</code></pre>
+<pre class="python"><code>print(prueba_array.shape) #Se comprueba que es un array 1D
+
+#Se convierten los array 1-D a 3-Dimensiones para el input del formato LSTM</code></pre>
+<pre><code>## (79,)</code></pre>
+<pre class="python"><code>entrenar_array = np.reshape(entrenar_array, (1, entrenar_array.shape[0], 1))
+prueba_array = np.reshape(prueba_array, (1, prueba_array.shape[0], 1))
+print(entrenar_array.shape) #Se comprueba que es un array 3D</code></pre>
+<pre><code>## (1, 300, 1)</code></pre>
+<pre class="python"><code>print(prueba_array.shape) #Se comprueba que es un array 3D</code></pre>
+<pre><code>## (1, 79, 1)</code></pre>
+</div>
+<div id="creación-del-modelo-lstm" class="section level4">
+<h4>4.4 Creación del modelo LSTM</h4>
+<pre class="python"><code>#Inicialización del modelo
+model = Sequential()
+
+#Se agrega una capa interna LSTM 
+#model.add(LSTM(units=30, return_sequences=True, input_shape=(entrenar_array.shape[0], 1)))
+model.add(LSTM(units=30, return_sequences=True, input_shape=(300, 1)))
+
+#_________________________________________________________________________________________________
+#-Es posible agregar más capas internas LSTM pero incrementa el tiempo de entrenamiento, aunque puede mejorar aproximación
+#-Además, entre más capas internas en la red, nos adentramos en el campo del Deep Learning
+
+model.add(Dropout(0.2)) #Evita que se traslapen las capas, en caso de haber más de una
+
+#-Capa 2 LSTM
+model.add(LSTM(units=30, return_sequences=True))
+model.add(Dropout(0.2))
+
+#-Capa 3 LSTM
+model.add(LSTM(units=30, return_sequences=True))
+model.add(Dropout(0.2))
+#_________________________________________________________________________________________________
+
+#Se agrega la capa externa de salida
+model.add(Dense(units=1)) #1: La salida esperada en de una dimensión/Dense une los varios layers o capas</code></pre>
+</div>
+<div id="compilaroptimizar-modelo-lstm" class="section level4">
+<h4>4.5 Compilar/optimizar modelo LSTM</h4>
+</div>
+<div id="predicción-de-datos" class="section level4">
+<h4>4.6 Predicción de datos</h4>
+</div>
+<div id="test-de-los-datos-reales-con-los-aproximados" class="section level4">
+<h4>4.7 Test de los datos reales con los aproximados</h4>
+</div>
 <div id="referencias" class="section level4">
 <h4>Referencias</h4>
 <p>[1] Saffa, F. (2020). “Exploring the Link between COVID-19 and Depression using Neural Networks”. Recuperado de: <a href="https://towardsdatascience.com/exploring-the-link-between-covid-19-and-depression-using-neural-networks-469030112d3d" class="uri">https://towardsdatascience.com/exploring-the-link-between-covid-19-and-depression-using-neural-networks-469030112d3d</a></p>
