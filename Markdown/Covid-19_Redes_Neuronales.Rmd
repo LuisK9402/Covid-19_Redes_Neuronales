@@ -100,9 +100,10 @@ import matplotlib.pyplot as plt
 
 from sklearn.preprocessing import MinMaxScaler
 
-import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, LSTM
+import tensorflow as tf
+
 
 ```
 
@@ -382,6 +383,10 @@ model.add(Dense(units=1)) #1: La salida esperada en de una dimensión/Dense une 
 
 #### 4.5 Compilar/optimizar modelo LSTM
 
+```{python}
+model.compile(optimizer='rmsprop', loss='mse')
+model.fit(X_train,Y_train,epochs=20,batch_size=32)
+```
 
 
 
