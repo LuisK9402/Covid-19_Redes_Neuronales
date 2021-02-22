@@ -33,6 +33,16 @@ def SeleccionarPaisesAcumulados(datos, paises=''):
 	#Retorna datos solo de los países
 	return datos
 
+def SeleccionarPaisesDiarios(datos, paises):
+    #Se establece la columna 'Country/Region' como índice
+    datos = datos.set_index('Country/Region')
+    #Se elige solo la info de los países de la lista
+    datos_paises = datos.loc[paises]
+    #Se calculan los casos diarios apartir de una resta de los acumulados
+    datos_paises_diarios = datos_paises.diff(axis=1).fillna(datos_paises.iloc[0,0]).astype(np.int64)
+    #Retorna datos solo de los países
+    return datos_paises_diarios
+
 def walk_forward_format_2(train_data, in_size, out_size, step=1):
   # Aplanamiento de datos
   data = train_data.reshape(-1,1,1)
@@ -92,8 +102,8 @@ def multi_walk_forward_format(train_data, in_size, out_size, step=1):
 #####################
 
 # URL con los datos
-#url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
-url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'
+url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
+#url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'
 
 # Se cargan los datos a un dataframe
 datos_totales = CargarArchivo(url,online=True)
@@ -104,13 +114,14 @@ print(datos_totales.isnull().values.any())
 #
 
 # Días a excluir de los datos reales
-dias_pronostico = 5
-dias_disponibles = 30
+dias_pronostico = 30#5
+dias_disponibles = 320#30
 # paises = ['Costa Rica','Guatemala', 'El Salvador', "Panama", 'Honduras', 'Mexico']
-paises = ['Costa Rica','Guatemala', 'El Salvador', "Panama", 'Honduras']
-# paises = ['Costa Rica']
+#paises = ['Costa Rica','Guatemala', 'El Salvador', "Panama", 'Honduras']
+paises = ['Costa Rica']
 
-datos_pais = SeleccionarPaisesAcumulados(CargarArchivo(url,online=True), paises)
+#datos_pais = SeleccionarPaisesAcumulados(CargarArchivo(url,online=True), paises)
+datos_pais = SeleccionarPaisesDiarios(CargarArchivo(url,online=True), paises)
 # datos_pais = SeleccionarPaisesAcumulados(CargarArchivo(url,online=True))
 datos_pais
 
@@ -179,18 +190,20 @@ model.add(Dropout(0.2))
 model.add(Dense(50, activation='relu'))
 model.add(Dropout(0.2))
 
-model.add(Dense(n_outputs))
+model.add(Dense(n_outputs, activation='relu'))
 
 model.compile(loss='mse', optimizer='adam')
 # fit network
 model.fit(train_x_r, train_y_r, epochs=epochs, batch_size=batch_size, verbose=verbose)
 
 pais = ['Costa Rica']
-datos_pais_test = SeleccionarPaisesAcumulados(CargarArchivo(url,online=True), pais)
+#datos_pais_test = SeleccionarPaisesAcumulados(CargarArchivo(url,online=True), pais)
+datos_pais_test = SeleccionarPaisesDiarios(CargarArchivo(url,online=True), paises)
 test_x = datos_pais_test.iloc[:,-(dias_pronostico+dias_disponibles):-dias_pronostico].to_numpy()
 test_x_s = sc_in.transform(test_x)
 test_x_r = test_x.reshape(test_x_s.shape[0],test_x_s.shape[1],1)
-for i in test_x_s:
+#for i in test_x_s:
+for i in test_x:
   plt.plot(i)
 prediction = model.predict(test_x_r)
 
@@ -204,8 +217,22 @@ test_y = datos_pais.iloc[:,-dias_pronostico:].to_numpy()
 print(prediction)
 print(test_y)
 
+model.summary()
+
 plt.figure("Resultados")
-plt.plot(prediction_rescaled[0])
 plt.plot(test_y[0])
-plt.legend(("Pred","Real"))
+plt.plot(prediction_rescaled[0])
+#plt.plot(prediction[0])
+plt.legend(("Real", "Pred"))
 plt.show()
+#plt.close()
+
+plt.figure("Resultados General Costa Rica")
+n_fechas = datos_pais_test.shape[1]
+x_eje_r = list(range(0, n_fechas))
+x_eje_p = list(range(n_fechas-dias_pronostico, n_fechas))
+plt.plot(x_eje_r, datos_pais_test.loc[pais[0]])
+plt.plot(x_eje_p, prediction_rescaled[0])
+plt.legend(("Real", "Pred"))
+plt.show()
+plt.close()
