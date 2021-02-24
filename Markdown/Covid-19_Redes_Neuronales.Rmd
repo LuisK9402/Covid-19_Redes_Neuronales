@@ -688,8 +688,12 @@ test_x_r = test_x.reshape(test_x_s.shape[0],test_x_s.shape[1],1)
 Grafica de Datos Reales utilizados para entrenar el Modelo LSTM
 
 ```{python}
+plt.figure("Datos de Entrenamiento: Costa Rica")
 for i in test_x:
   plt.plot(i)
+plt.title('Datos Diarios Confirmados, Costa Rica: Entrenamiento')
+plt.xlabel('Días para entrenamiento')
+plt.ylabel('Casos reportados')
 ```
 
 #### 4.7 Predicción de datos y tratamiento de los datos obtenidos
@@ -722,10 +726,13 @@ print(test_y)
 Grafica de Datos de Predicción vs Datos Reales correspondientes a ese mismo periodo
 
 ```{python}
-plt.figure("Resultados")
+plt.figure("Resultados Costa Rica")
 plt.plot(test_y[0])
 plt.plot(prediction_rescaled[0])
+plt.title('Datos Diarios Confirmados Predicción vs Reales: Costa Rica')
 plt.legend(("Real", "Pred"))
+plt.xlabel('Días para Predicción')
+plt.ylabel('Casos reportados')
 plt.show()
 plt.close()
 ```
@@ -733,19 +740,66 @@ plt.close()
 Grafica de Datos de Predicción vs Datos Reales TOTALES, todo el archivo
 
 ```{python}
-plt.figure("Resultados General Costa Rica")
+plt.figure("Resultados Generales Costa Rica")
 n_fechas = datos_pais_test.shape[1]
 x_eje_r = list(range(0, n_fechas))
 x_eje_p = list(range(n_fechas-dias_pronostico, n_fechas))
 plt.plot(x_eje_r, datos_pais_test.loc[pais[0]])
 plt.plot(x_eje_p, prediction_rescaled[0])
+plt.title('Datos Totales Diarios Confirmados Predicción vs Reales: Costa Rica')
 plt.legend(("Real", "Pred"))
+plt.xlabel('Días para Entrenamiento + Predicción')
+plt.ylabel('Casos reportados')
 plt.show()
 plt.close()
 ```
 
 
+#### 4.9 Resultados más aproximados
 
+A continuación se muestran los resultados más cercanos obtenidos para cada uno de los archivos.
+
+#### -Archivo 1 (Casos Confirmados): “time_series_covid19_confirmed_global.csv”
+
+<p align="center">
+  <img width="600px" src="images/Resultados/1_Confirmado.png">
+</p>
+
+<p align="center">
+  <img width="600px" src="images/Resultados/2_Confirmado.png">
+</p>
+
+<p align="center">
+  <img width="600px" src="images/Resultados/3_Confirmado.png">
+</p>
+
+#### -Archivo 2 (Casos de Muerte): “time_series_covid19_deaths_global.csv”
+
+<p align="center">
+  <img width="600px" src="images/Resultados/1_Muerte.png">
+</p>
+
+<p align="center">
+  <img width="600px" src="images/Resultados/2_Muerte.png">
+</p>
+
+<p align="center">
+  <img width="600px" src="images/Resultados/3_Muerte.png">
+</p>
+
+#### -Archivo 3 (Casos Recuperados): “time_series_covid19_recovered_global.csv”
+
+<p align="center">
+  <img width="600px" src="images/Resultados/1_Recuperado.png">
+</p>
+
+<p align="center">
+  <img width="600px" src="images/Resultados/2_Recuperado.png">
+</p>
+
+<p align="center">
+  <img width="600px" src="images/Resultados/3_Recuperado.png">
+</p>
 
 
 
