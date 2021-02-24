@@ -1,10 +1,12 @@
 ---
-title: "Covid-19 Machine Learning: Redes Neuronales"
-author: 
+title: 'Covid-19 Machine Learning: Redes Neuronales'
+author:
 - Alfonso Castillo Orozco
 - Luis Carlos Solano Mora
 date: "Febrero 24, 2021"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -61,9 +63,118 @@ pip3 install tensorflow
 
 ## Conceptos Claves
 
-### - Machine Learning
+### Machine Learning
+
+El aprendizaje automático o machine learning, es un subcampo de las ciencias de la computación que busca que las computadoras puedan aprender, es decir, que puedan mejorar los resultados obtenidos a partir de la experiencia.
+
+### ¿ **Qué es** "aprender" para una máquina?
+
+Una máquina utiliza un modelo matemático para relizar sus funciones. Estos modelos contienen parámetros, y la intención del aprendizaje de máquina es encontrar los parámetros que le permitan tener la mejor respuesta ante una entrada de información. Es a través de la **modificación de estos parámetros**, que una computadora puede "aprender", es decir que puede obtener un mejor resultado, mejorando ella misma su rendimiento previo.
+
+<p align="center">
+  <img height="300" src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Slope.gif">
+</p>
+<p align="center"  style="font-size:12px"><i>Imagen de: https://commons.wikimedia.org/wiki/File:Slope.gif</i></p>
+
+
+### ¿**Cómo** aprende una máquina?
+
+La forma en la que una máquina aprende varía dependiendo del modelo o arquitectura de aprendizaje de máquina que se esté utilizando. Pero de forma general, lo que se busca es calcular el error de la salida generada por la máquina con respecto a la salida deseada. Este error va a estar en función de los parámetros del modelo, es decir que lo que se busca es obtener cómo varía el error al variar los parámetros. Una vez que se obtiene una función que describa el error, se bucará encontrar el valor de los parámetros que disminuyan el error. Encontrar el menor error es equivalente a encontrar un mínimo de la función, lo cuál puede conseguirse derivando la función, o como es el caso de las redes neuronales, que poseen muchos parámetros, calculando el gradiente.
+
+<p align="center">
+  <img height="400" src="https://miro.medium.com/max/478/1*hUd744hDEEGx0-ypWGhrkw.gif">
+</p>
+<p align="center"  style="font-size:11px"><i>Imagen de: https://towardsdatascience.com/a-visual-explanation-of-gradient-descent-methods-momentum-adagrad-rmsprop-adam-f898b102325c</i></p>
+
+Entonces básicamente para que la máquina aprenda se requieren dos pasos:
+- Calcular el error
+- Optimizar el error (encontrar el mínimo)
+
+Para estos dos pasos existen diversos métodos:
+
+##### **Cálculo del error**:
+- Raíz cuadrada media
+- Error absoluto medio
+- Error absoluto medio escalado
+- Entropía cruzada categórica
+- Entropía cruzada binaria
+
+#### **Optimización del error**
+- Descenso estocástico del gradiente – SGD
+- Adam
+- Adagrad
+- Adadelta
 
 ### - Redes Neuronales
+
+Las redes neuronales son un tipo de aprendizaje automático, que se basa en el uso de unidades de cálculo llamadas neuronas. Una red neuronal, como su nombre lo indica, está formada por un conjuto de estas neuronas conectadas.
+
+Una red neuronal se compone de forma general por una capa de entrada, una o más capas de neuronas (también llamadas capas ocultas), y una capa de salida
+
+<p align="center">
+  <img height="500" src="https://upload.wikimedia.org/wikipedia/commons/4/46/Colored_neural_network.svg" alt="Estructura de red neuronal, una capa">
+</p>
+<p align="center"  style="font-size:12px"><i>Imagen de: https://commons.wikimedia.org/wiki/File:Colored_neural_network.svg</i></p>
+
+<p align="center">
+  <img width="700" src="https://upload.wikimedia.org/wikipedia/commons/8/8b/Neural_network_bottleneck_achitecture.svg" alt="Estructura de red neuronal, dos capas">
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://commons.wikimedia.org/wiki/File:Neural_network_bottleneck_achitecture.svg</i></p>
+
+### La Neurona
+
+Una neurona es una unidad que se encarga de realizar una suma ponderada de las entradas que llegan a esa neurona
+
+<p align="center">
+  <img width="600" src="https://upload.wikimedia.org/wikipedia/commons/8/89/Perceptron.png">
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://commons.wikimedia.org/wiki/File:</i></p>
+
+
+Es decir que la salida está dada por
+
+<p align="center">
+  <img width="600px" src="images/eq1.png">
+</p>
+
+ lo que se puede reescribir como
+
+<p align="center">
+  <img width="300px" src="images/eq2.png">
+</p>
+
+### La Función de Activación
+
+Para evitar la linealidad de las salidas de una neurona se utiliza una función de activación. Existen varias funciones de activación, pero por lo general son funciones acotadas. Entre las funciones de activación más usadas están:
+
+- **Rectificador (ReLU)**
+<p align="center">
+  <img height="400" src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Ramp_function.svg">
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://commons.wikimedia.org/wiki/File:Ramp_function.svg</i></p>
+
+
+- **Tangente Hiperbólica**
+
+<p align="center">
+  <img height="400" src="https://upload.wikimedia.org/wikipedia/commons/8/87/Hyperbolic_Tangent.svg">
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://commons.wikimedia.org/wiki/File:Hyperbolic_Tangent.svg</i></p>
+
+- **Sigmoide**
+
+<p align="center">
+  <img height="400" src="https://upload.wikimedia.org/wikipedia/commons/5/53/Sigmoid-function-2.svg">
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://commons.wikimedia.org/wiki/File:Sigmoid-function-2.svg</i></p>
+
+La función de activación se aplica justo antes de la salida
+
+<p align="center">
+  <img height="500" src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Perceptr%C3%B3n_5_unidades.svg">
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://commons.wikimedia.org/wiki/File:Perceptr%C3%B3n_5_unidades.svg</i></p>
+
 
 ### - Recurrent Neural Network (RNN)
 
@@ -78,6 +189,8 @@ pip3 install tensorflow
 ### - TensorFlow
 
 ### - Keras
+
+Keras es una API (Application Programming Interface) especializada para trabajar con redes neuronales. Keras corre sobre Tensorflow, es decir que utiliza las funciones que tensorflow provee y le agrega una capa más de abstracción, simplificando algunoas de los procesos más comunes y permitiendo que el usuario no tenga que preocuparse por algunos detalles, facilitando así la creación de redes neuronales, en especial para personas principiantes. Si se requiere un manejo más minuscioso de algunas funciones de la red neuronal, será necesario descender hasta el propio tensorflow.
 
 
 ## Implementación en Python
@@ -254,15 +367,20 @@ def Analice_archivoDiarios(archivo, paises):
     print("<----------------- FINALIZA ANÁLISIS DE DATOS <-----------------")
 ```
 
-#### f. XXX:
+#### f. Division los datos para obtener más muestras:
 
-Se genera una función...
+Se genera una función que divide los datos, con el fin de poder ingresar más muestras al entrenamiento del modelo
+
+<p align="center">
+  <img height="500" src="https://i.stack.imgur.com/padg4.gif">
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://stackoverflow.com/questions/31947183/how-to-implement-walk-forward-testing-in-sklearn</i></p>
+
 
 ```{python}
 def walk_forward_format_2(train_data, in_size, out_size, step=1):
     # Aplanamiento de datos
     data = train_data.reshape(-1,1,1)
-    # print(data)
     # Cantidad de muestras
     samples = math.floor((data.shape[0]-(in_size+out_size))/step)
     if (samples<1):
@@ -275,9 +393,9 @@ def walk_forward_format_2(train_data, in_size, out_size, step=1):
     wf_data_in = []
     # Arreglo de validacion con datos walk-forward
     wf_data_val = []
+    # Se divide en cada una de las muestras
     for i in range(0,samples):
         wf_data_in.append(data[i*step:i*step+input_size])
-        # print(wf_data_in)
         wf_data_val.append(data[i*step+input_size:i*step+input_size+validation_size])
     # Se convierten a  np arrays con la forma deseada
     wf_data_in_np = np.array(wf_data_in).reshape(samples,-1)
@@ -285,35 +403,29 @@ def walk_forward_format_2(train_data, in_size, out_size, step=1):
     return wf_data_in_np, wf_data_val_np
 ```
 
-#### g. YYY:
+#### g. Division de los datos cuando se tienen varios paises:
 
-Se genera una función...
+Se genera una función que divide los datos para obtener más muestras, cuando se tiene más de un país en el dataframe
 
 ```{python}
 def multi_walk_forward_format(train_data, in_size, out_size, step=1):
+    # Se inicializan listas vacías donde se colocarán las muestras
     x_res = []
     y_res = []
-    print(type(train_data))
-    print(train_data.shape)
+    # Se hace un loop para recorrer cada país
     for i in train_data:
-        # print(type(i))
-        # print(" Holi")
+        # Se aplana el dato
         data_temp = i.reshape(1,-1)
-        # print(data_temp.shape)
+        # Se llama a la función que divide los datos para un solo país
         x_temp,y_temp = walk_forward_format_2(data_temp,in_size, out_size, step)
-        # print(" FFF ", x_temp.shape )
-        # plt.figure
+        # Cada muestra obtenida para el país dse guarda en la lista con todas las muestras de todos los paises
+        # Esto se hace parta los datos de entrada
         for j in x_temp:
-        # print(x_temp[j])
-        # print(x_temp.shape)
-        # print(j)
-        # plt.plot(j)
             x_res.append(j)
-      
+            # Y para los de salida
         for j in y_temp:
             y_res.append(j)
-        # plt.show()
-        # print(x_res)
+        # Finalmente se convierten las listas a arreglos de numpay y se les da la forma deseada
         x_np = np.array(x_res).reshape(-1,in_size)
         y_np = np.array(y_res).reshape(-1,out_size)
     return x_np,y_np
@@ -335,7 +447,6 @@ url2 = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_co
 url3 = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'
 
 paises = ['Costa Rica']
-
 ```
 
 ### Archivo 1 (Casos Confirmados): “time_series_covid19_confirmed_global.csv”
@@ -363,7 +474,7 @@ En esta sección se procede a implementar una Red Neuronal. Primero se seleccion
 #### 4.1 Selecionar datos para entrenar y datos de prueba 
 
 ```{python}
-
+# Se escoge cúales datos se utilizarán (Acumulados, defunciones o recuperados)
 url = url1
 #url = url2
 #url = url3
@@ -372,26 +483,38 @@ url = url1
 datos_totales = CargarArchivo(url,online=True)
 # Se imprimen los datos para observarlos
 print(datos_totales)
-print(datos_totales.isnull().values.any())
+```
 
+Se comprueba que no hayan campos vacíos en el dataframe
+
+```{python}
+print(datos_totales.isnull().values.any())
+```
+
+```{python}
 # Días a excluir de los datos reales
-dias_pronostico = 30#5
-dias_disponibles = 320#30
+dias_pronostico = 30
+# Días que se ingresarán como entrada a la red
+dias_disponibles = 320
 #paises = ['Costa Rica','Guatemala', 'El Salvador', "Panama", 'Honduras']
 paises = ['Costa Rica']
 
 #datos_pais = SeleccionarPaisesAcumulados(CargarArchivo(url,online=True), paises)
 datos_pais = SeleccionarPaisesDiarios(CargarArchivo(url,online=True), paises)
 datos_pais
+````
 
+Se seleccionan los datos para el entrenamiento
+```{python}
 train_data = datos_pais.iloc[:,:-dias_pronostico].to_numpy()
 
 print(train_data.shape)
-
+```
+Al trabajar con series de tiempo se puede ampliar la cantidad de muestras si los datos disponibles se dividen utilizando un método llamado *'walk-forward'* o *'roll-forward'*. Este método consiste en tomar una muestra o ventana de datos, e irlos desplazado una cierta cantidad de pasos. De esta forma se pueden obtener una mayor cantidad de muestras.
+```{python}
 train_x,train_y = multi_walk_forward_format(train_data,dias_disponibles,dias_pronostico,10)
 
 print(train_x.shape)
-
 ```
 
 #### 4.2 Escalar los datos seleccionados
@@ -399,31 +522,29 @@ print(train_x.shape)
 Una forma recomendada de optimizar el proceso de entrenamiento es utilizar datos que estén entre un margen de 0 a 1, es por ello que los casos se escalan dentro de este margen.
 
 ```{python}
-
 # Se establece que la escala se hará utilizando los datos de entreno para los máximos y mínimos,
 #es decir, al valor mínimo en datos_entreno se asigna como 0, y el máximo valor de datos_entreno se asigna como 1
 
 sc_in = MinMaxScaler(feature_range=(0,1))
 sc_out = MinMaxScaler(feature_range=(0,1))
 
-print(train_x.shape)
+# Se hace el ajuste de los datos, tanto para los datos de entrada com para los de salida, cada uno por aparte
 sc_in.fit(train_x)
 sc_out.fit(train_y)
-#sc.fit(datos_entreno)
-
-sc_info = sc_in.data_max_
-print(sc_info.shape)
-print("Scale: ", sc_info)
 
 # Se escalan los datos de entrada y salida del entreno
-# for sample in train_x: 
 train_x_s = sc_in.transform(train_x)
 train_y_s = sc_out.transform(train_y)
-# print(train_y_s.shape)
+```
+Una vez escalados los datos es necesario cambiar la forma como están acomodados los datos. Esto se hace únicamente porque así es la forma en la que la función de Keras que realiza el modelo recibe los datos.
 
+Esta forma es de la siguiente manera:
+
+(Cantidad de muestras, cantidad de pasos de tiempo, cantidad de características)
+
+```{python}
 train_x_r = train_x_s.reshape(train_x_s.shape[0],train_x_s.shape[1],1)
 train_y_r = train_y_s.reshape(train_y_s.shape[0],train_y_s.shape[1],1)
-
 ```
 
 #### 4.3 Definir los parámetros del Modelo LSTM
@@ -458,7 +579,6 @@ model.add(Dense(n_outputs, activation='relu'))
 EJEMPLO. Es posible agregar más capas internas LSTM pero incrementa el tiempo de entrenamiento, aunque puede o no mejorar la aproximación. Además, entre más capas internas en la red, nos adentramos en el campo del Deep Learning. El Modelo B no fue implementado ya que las predicciones se ajustaban más con solo una capa LSTM (Modelo A).
 
 ```{python eval=FALSE}
-
 #Inicialización del modelo
 model_B = Sequential()
 
@@ -476,15 +596,15 @@ model_B.add(Dropout(0.2))
 
 #Se agrega la capa externa de salida
 model_B.add(Dense(n_outputs, activation='relu'))
-
 ```
 
 #### 4.5 Compilar/optimizar modelo LSTM
 
 ```{python}
-
+# Se establecen el método para obtener el error y para minimizarlo
 model.compile(loss='mse', optimizer='adam')
-# fit network
+
+# Se entrena el modelo con los datos de entreno
 model.fit(train_x_r, train_y_r, epochs=epochs, batch_size=batch_size, verbose=verbose)
 
 #Se despliega el modelo implementado, Modelo A
@@ -493,15 +613,18 @@ model.summary()
 
 #### 4.6 Datos para el test
 
-```{python}
+Ahora se procede a seleccionar los datos de entrada para la prueba.
 
+```{python}
 pais = ['Costa Rica']
 #datos_pais_test = SeleccionarPaisesAcumulados(CargarArchivo(url,online=True), pais)
 datos_pais_test = SeleccionarPaisesDiarios(CargarArchivo(url,online=True), paises)
+# Se seleccionan los últimos datos disponibles menos los que se usaran para comprobar si la predicción es correcta
 test_x   = datos_pais_test.iloc[:,-(dias_pronostico+dias_disponibles):-dias_pronostico].to_numpy()
+# Se escalan los datos de entrada
 test_x_s = sc_in.transform(test_x)
+# Se acomodan en la forma que el modelo de Keras los recibe
 test_x_r = test_x.reshape(test_x_s.shape[0],test_x_s.shape[1],1)
-
 ```
 
 Grafica de Datos Reales utilizados para entrenar el Modelo LSTM
@@ -514,35 +637,39 @@ for i in test_x:
 #### 4.7 Predicción de datos y tratamiento de los datos obtenidos
 
 ```{python}
-
+# Se realiza la predicción del modelo
 prediction = model.predict(test_x_r)
 
 print(prediction.shape)
 print(prediction)
+```
+
+```{python}
+# El resultado está escalado, por lo que es necesario invertir el escalamiento para obtener los valores en la escala correcta
 prediction_rescaled = sc_out.inverse_transform(prediction)
 print(prediction_rescaled)
+```
 
+```{python}
+# Se obtienen los datos reales que se querían predecir, para poder comparar
 test_y = datos_pais.iloc[:,-dias_pronostico:].to_numpy()
 
 print(prediction)
 print(test_y)
-
 ```
 
 
-#### 4.8 Resuttados obtenidos
+#### 4.8 Resultados obtenidos
 
 Grafica de Datos de Predicción vs Datos Reales correspondientes a ese mismo periodo
 
 ```{python}
-
 plt.figure("Resultados")
 plt.plot(test_y[0])
 plt.plot(prediction_rescaled[0])
 plt.legend(("Real", "Pred"))
 plt.show()
 plt.close()
-
 ```
 
 Grafica de Datos de Predicción vs Datos Reales TOTALES, todo el archivo
@@ -557,7 +684,6 @@ plt.plot(x_eje_p, prediction_rescaled[0])
 plt.legend(("Real", "Pred"))
 plt.show()
 plt.close()
-
 ```
 
 
