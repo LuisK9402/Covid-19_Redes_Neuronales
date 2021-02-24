@@ -1,9 +1,9 @@
 ---
 title: "Covid-19 Machine Learning: Redes Neuronales"
 author: 
-- Alfonso Castillo Orozco, B41546
-- Luis Carlos Solano Mora, B46752
-date: "2/7/2021"
+- Alfonso Castillo Orozco
+- Luis Carlos Solano Mora
+date: "Febrero 24, 2021"
 output: html_document
 ---
 
@@ -65,23 +65,19 @@ pip3 install tensorflow
 
 ### - Redes Neuronales
 
-### - Long Short-Term Memory (LSTM)
-
 ### - Recurrent Neural Network (RNN)
 
-### - LSTM vs RNN
+### - Long Short-Term Memory (LSTM)
+
+### - RNN vs LSTM
 
 ![Diagrama](images/RedNeuronal.png)
 
 ## Bibliotecas Implementadas
 
-### - Pandas
-
-### - Pytorch
+### - TensorFlow
 
 ### - Keras
-
-### - TensorFlow
 
 
 ## Implementación en Python
@@ -96,14 +92,15 @@ import pandas as pd
 
 import numpy as np
 
+import math
+
 import matplotlib.pyplot as plt
 
 from sklearn.preprocessing import MinMaxScaler
 
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, LSTM
-import tensorflow as tf
-
 
 ```
 
@@ -114,13 +111,19 @@ import tensorflow as tf
 Se carga el archivo csv en la variable. Retorna el data frame con las columnas de interés.
 
 ```{python}
-def CargarArchivo(file):
-    #Se carga el archivo y se convierte en data frame con pandas
-    datos = pd.read_csv('../Datos/' + file)
+def CargarArchivo(file, online=False):
+    if online:
+    # Se carga el archivo online
+        datos = pd.read_csv(file)
+    else:
+    # Se carga el archivo local
+	    datos = pd.read_csv('../Datos/' + file)
+	
+	#Se convierte en data frame con pandas 
     datos_pd = pd.DataFrame(datos)
-    #Se eliminan las columnas con los nombres "Province/State", "Lat" y "Long"
+    # Se eliminan las columnas con los nombres "Province/State", "Lat" y "Long"
     datos_pd_reducidos = datos_pd.drop(['Province/State', 'Lat', 'Long'], axis=1)
-    #Retorna datos con las 3 columnas eliminadas
+    # Retorna datos con las 3 columnas eliminadas
     return datos_pd_reducidos
 ```
 
@@ -129,13 +132,17 @@ def CargarArchivo(file):
 Se seleccionan los paises de interés para el análisis, con los casos acumulados.
 
 ```{python}
-def SeleccionarPaisesAcumulados(datos, paises):
+def SeleccionarPaisesAcumulados(datos, paises=''):
     #Se establece la columna 'Country/Region' como índice
     datos = datos.set_index('Country/Region')
     #Se elige solo la info de los países de la lista
-    datos_paises = datos.loc[paises]
+    if paises != '':
+        datos_paises = datos.loc[paises]
+        #Retorna datos solo de los países
+        return datos_paises
     #Retorna datos solo de los países
-    return datos_paises
+    else:
+        return datos
 ```
 
 #### c. Generar los datos y gráficos de los datos obtenidos ACUMULADOS:
@@ -144,7 +151,7 @@ Se genera una función general para analizar los datos acumulados que se tienen 
 
 ```{python}
 def Analice_archivoAcumulados(archivo, paises):
-    datos_reducidos = CargarArchivo(archivo)
+    datos_reducidos = CargarArchivo(archivo, online =True)
     datos_paises = SeleccionarPaisesAcumulados(datos_reducidos, paises)
     #e. Se crea una lista con elementos desde 0 hasta el número de fechas menos 1
     n_fechas = datos_paises.shape[1]
@@ -153,11 +160,11 @@ def Analice_archivoAcumulados(archivo, paises):
     #f. Se grafican los datos
     #--Se define los posibles títulos para el gráfico
     titulo_grafico = ''
-    if archivo=='time_series_covid19_confirmed_global.csv':
+    if archivo=='time_series_covid19_confirmed_global.csv' or archivo[-40:]=='time_series_covid19_confirmed_global.csv':
         titulo_grafico = 'Casos Confirmados Acumulados de Covid-19'
-    elif archivo=='time_series_covid19_deaths_global.csv':
+    elif archivo=='time_series_covid19_deaths_global.csv' or archivo[-37:]=='time_series_covid19_deaths_global.csv':
         titulo_grafico = 'Casos de Muerte Acumulados por Covid-19'
-    elif archivo=='time_series_covid19_recovered_global.csv':
+    elif archivo=='time_series_covid19_recovered_global.csv' or archivo[-40:]=='time_series_covid19_recovered_global.csv':
         titulo_grafico = 'Casos Recuperados Acumulados de Covid-19'
     
     #--Impresiones en Consola
@@ -186,15 +193,21 @@ def Analice_archivoAcumulados(archivo, paises):
 Se seleccionan los paises de interés para el análisis, con los casos diarios.
 
 ```{python}
-def SeleccionarPaisesDiarios(datos, paises):
+def SeleccionarPaisesDiarios(datos, paises=''):
     #Se establece la columna 'Country/Region' como índice
     datos = datos.set_index('Country/Region')
     #Se elige solo la info de los países de la lista
-    datos_paises = datos.loc[paises]
-    #Se calculan los casos diarios apartir de una resta de los acumulados
-    datos_paises_diarios = datos_paises.diff(axis=1).fillna(datos_paises.iloc[0,0]).astype(np.int64)
+    if paises != '':
+        datos_paises = datos.loc[paises]
+        #Se calculan los casos diarios apartir de una resta de los acumulados
+        datos_paises = datos_paises.diff(axis=1).fillna(datos_paises.iloc[0,0]).astype(np.int64)
+        #Retorna datos solo de los países
+        return datos_paises
     #Retorna datos solo de los países
-    return datos_paises_diarios
+    else:
+        #Se calculan los casos diarios apartir de una resta de los acumulados
+        datos = datos.diff(axis=1).fillna(datos.iloc[0,0]).astype(np.int64)
+        return datos
 ```
 
 
@@ -205,7 +218,7 @@ Se genera una función general para analizar los datos diarios que se tienen par
 
 ```{python}
 def Analice_archivoDiarios(archivo, paises):
-    datos_reducidos = CargarArchivo(archivo)
+    datos_reducidos = CargarArchivo(archivo, online =True)
     datos_paises = SeleccionarPaisesDiarios(datos_reducidos, paises)
     #e. Se crea una lista con elementos desde 0 hasta el número de fechas menos 1
     n_fechas = datos_paises.shape[1]
@@ -214,11 +227,11 @@ def Analice_archivoDiarios(archivo, paises):
     #f. Se grafican los datos
     #--Se define los posibles títulos para el gráfico
     titulo_grafico = ''
-    if archivo=='time_series_covid19_confirmed_global.csv':
+    if archivo=='time_series_covid19_confirmed_global.csv' or archivo[-40:]=='time_series_covid19_confirmed_global.csv':
         titulo_grafico = 'Casos Confirmados Diarios de Covid-19'
-    elif archivo=='time_series_covid19_deaths_global.csv':
+    elif archivo=='time_series_covid19_deaths_global.csv' or archivo[-37:]=='time_series_covid19_deaths_global.csv':
         titulo_grafico = 'Casos de Muerte Diarios por Covid-19'
-    elif archivo=='time_series_covid19_recovered_global.csv':
+    elif archivo=='time_series_covid19_recovered_global.csv' or archivo[-40:]=='time_series_covid19_recovered_global.csv':
         titulo_grafico = 'Casos Recuperados Diarios de Covid-19'
     
     #--Impresiones en Consola
@@ -241,63 +254,143 @@ def Analice_archivoDiarios(archivo, paises):
     print("<----------------- FINALIZA ANÁLISIS DE DATOS <-----------------")
 ```
 
+#### f. XXX:
+
+Se genera una función...
+
+```{python}
+def walk_forward_format_2(train_data, in_size, out_size, step=1):
+    # Aplanamiento de datos
+    data = train_data.reshape(-1,1,1)
+    # print(data)
+    # Cantidad de muestras
+    samples = math.floor((data.shape[0]-(in_size+out_size))/step)
+    if (samples<1):
+        raise NameError("El tamaño de las entradas más las salidas es mayor al tamaño de los datos")
+    # Tamaño de los datos de validación
+    validation_size = out_size
+    # Tamaño de los datos de entrada
+    input_size = in_size
+    # Arreglo de entrada con muestras walk-forward
+    wf_data_in = []
+    # Arreglo de validacion con datos walk-forward
+    wf_data_val = []
+    for i in range(0,samples):
+        wf_data_in.append(data[i*step:i*step+input_size])
+        # print(wf_data_in)
+        wf_data_val.append(data[i*step+input_size:i*step+input_size+validation_size])
+    # Se convierten a  np arrays con la forma deseada
+    wf_data_in_np = np.array(wf_data_in).reshape(samples,-1)
+    wf_data_val_np = np.array(wf_data_val).reshape(samples,-1)
+    return wf_data_in_np, wf_data_val_np
+```
+
+#### g. YYY:
+
+Se genera una función...
+
+```{python}
+def multi_walk_forward_format(train_data, in_size, out_size, step=1):
+    x_res = []
+    y_res = []
+    print(type(train_data))
+    print(train_data.shape)
+    for i in train_data:
+        # print(type(i))
+        # print(" Holi")
+        data_temp = i.reshape(1,-1)
+        # print(data_temp.shape)
+        x_temp,y_temp = walk_forward_format_2(data_temp,in_size, out_size, step)
+        # print(" FFF ", x_temp.shape )
+        # plt.figure
+        for j in x_temp:
+        # print(x_temp[j])
+        # print(x_temp.shape)
+        # print(j)
+        # plt.plot(j)
+            x_res.append(j)
+      
+        for j in y_temp:
+            y_res.append(j)
+        # plt.show()
+        # print(x_res)
+        x_np = np.array(x_res).reshape(-1,in_size)
+        y_np = np.array(y_res).reshape(-1,out_size)
+    return x_np,y_np
+```
 
 ### 3. Se imprime en consola la información para los casos confirmados, de muerte y recuperados, tanto acumulados como diarios.
 
 ```{python}
-# MAIN: Se llaman todas las funciones creadas____________________________________________________________
+# Main Parte 3: Se visualizan los datos
 
+# Datos locales de respaldo
 file1 = 'time_series_covid19_confirmed_global.csv' 
 file2 = 'time_series_covid19_deaths_global.csv'
 file3 = 'time_series_covid19_recovered_global.csv'
 
-#paises = ['Costa Rica', 'Panama', 'Colombia', 'Spain', 'Italy', 'Mexico', 'Germany']
+# URL con los datos
+url1 = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
+url2 = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'
+url3 = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'
+
 paises = ['Costa Rica']
 
 ```
 
 ### Archivo 1 (Casos Confirmados): “time_series_covid19_confirmed_global.csv”
 ```{python}
-Analice_archivoAcumulados(file1, paises)
-Analice_archivoDiarios(file1,paises)
+Analice_archivoAcumulados(url1, paises)
+Analice_archivoDiarios(url1,paises)
 ```
 
 ### Archivo 2 (Casos de Muerte): “time_series_covid19_deaths_global.csv”
 ```{python}
-Analice_archivoAcumulados(file2, paises)
-Analice_archivoDiarios(file2,paises)
+Analice_archivoAcumulados(url2, paises)
+Analice_archivoDiarios(url2,paises)
 ```
 
 ### Archivo 3 (Casos Recuperados): “time_series_covid19_recovered_global.csv”
 ```{python}
-Analice_archivoAcumulados(file3, paises)
-Analice_archivoDiarios(file3,paises)
+Analice_archivoAcumulados(url3, paises)
+Analice_archivoDiarios(url3,paises)
 ```
 
 ### 4. Análisis con Redes Neuronales.
 
-En esta sección se procede a implementar una Red Neuronal. Primero se seleccionan los datos para entrenar a la red neuronal, por lo tanto del total de días que son 379, se seleccionan los primeros 300 días para entrenar la red neuronal y con esto se proyectan los siguientes 79 días para posteriormente comparar este pronóstico con los datos reales.
+En esta sección se procede a implementar una Red Neuronal. Primero se seleccionan los datos para entrenar a la red neuronal, por lo tanto del total de días se seleccionan una gran parte para entrenar la red y con esto se proyecta para una cantidad de días el comportamiento de los casos por Covid-19, para posteriormente comparar este pronóstico con los datos reales.
 
 #### 4.1 Selecionar datos para entrenar y datos de prueba 
 
 ```{python}
 
-#Días a excluir de los datos reales
-dias_pronostico = 79
+url = url1
+#url = url2
+#url = url3
 
-datos_pais = SeleccionarPaisesAcumulados(CargarArchivo(file1), paises).iloc[0]
+# Se cargan los datos a un dataframe
+datos_totales = CargarArchivo(url,online=True)
+# Se imprimen los datos para observarlos
+print(datos_totales)
+print(datos_totales.isnull().values.any())
 
-#Datos para entrenar la red neuronal, se omiten los últimos días_pronostico
-datos_entrenar = SeleccionarPaisesAcumulados(CargarArchivo(file1), paises).iloc[0,:-dias_pronostico]
-#Datos reales para prueba del pronóstico
-datos_prueba = SeleccionarPaisesAcumulados(CargarArchivo(file1), paises).iloc[0,-dias_pronostico:]
+# Días a excluir de los datos reales
+dias_pronostico = 30#5
+dias_disponibles = 320#30
+#paises = ['Costa Rica','Guatemala', 'El Salvador', "Panama", 'Honduras']
+paises = ['Costa Rica']
 
-#Se imprimen los datos resultantes para entrenar
-print(datos_entrenar)
-#datos_entrenar.shape
+#datos_pais = SeleccionarPaisesAcumulados(CargarArchivo(url,online=True), paises)
+datos_pais = SeleccionarPaisesDiarios(CargarArchivo(url,online=True), paises)
+datos_pais
 
-#Se imprimen los datos resultantes para prueba
-print(datos_prueba)
+train_data = datos_pais.iloc[:,:-dias_pronostico].to_numpy()
+
+print(train_data.shape)
+
+train_x,train_y = multi_walk_forward_format(train_data,dias_disponibles,dias_pronostico,10)
+
+print(train_x.shape)
 
 ```
 
@@ -306,96 +399,166 @@ print(datos_prueba)
 Una forma recomendada de optimizar el proceso de entrenamiento es utilizar datos que estén entre un margen de 0 a 1, es por ello que los casos se escalan dentro de este margen.
 
 ```{python}
-escala = MinMaxScaler()
-escala = escala.fit(np.expand_dims(datos_pais, axis = 1))
 
-datos_entrenar_escalado = escala.transform(np.expand_dims(datos_entrenar, axis = 1))
+# Se establece que la escala se hará utilizando los datos de entreno para los máximos y mínimos,
+#es decir, al valor mínimo en datos_entreno se asigna como 0, y el máximo valor de datos_entreno se asigna como 1
 
-datos_prueba_escalado = escala.transform(np.expand_dims(datos_prueba, axis = 1))
+sc_in = MinMaxScaler(feature_range=(0,1))
+sc_out = MinMaxScaler(feature_range=(0,1))
 
-#Se imprimen los datos resultantes para entrenar escalados
-print(datos_entrenar_escalado)
-#datos_entrenar.shape
+print(train_x.shape)
+sc_in.fit(train_x)
+sc_out.fit(train_y)
+#sc.fit(datos_entreno)
 
-#Se imprimen los datos resultantes para prueba escalados
-print(datos_prueba_escalado)
+sc_info = sc_in.data_max_
+print(sc_info.shape)
+print("Scale: ", sc_info)
+
+# Se escalan los datos de entrada y salida del entreno
+# for sample in train_x: 
+train_x_s = sc_in.transform(train_x)
+train_y_s = sc_out.transform(train_y)
+# print(train_y_s.shape)
+
+train_x_r = train_x_s.reshape(train_x_s.shape[0],train_x_s.shape[1],1)
+train_y_r = train_y_s.reshape(train_y_s.shape[0],train_y_s.shape[1],1)
 
 ```
-#### 4.3 Disponer los datos en arreglos 3-D como entrada LSTM 
 
-Ahora se deben acomodar los datos en un array 3D para poder ser utilizados como el input del modelo LSTM a crear.
+#### 4.3 Definir los parámetros del Modelo LSTM
+
+Ahora se definen los parámetros del modelo LSTM a crear.
 
 ```{python}
-#Se crean las listas para almacenar los datos
-entrenar_list = []
-prueba_list = []
-
-#Se ingresan los datos para entrenamiento y prueba a las listas correspondientes
-for i in range(len(datos_entrenar_escalado)):
-    entrenar_list.append(datos_entrenar_escalado[i,0])
-
-for i in range(len(datos_prueba_escalado)):
-    prueba_list.append(datos_prueba_escalado[i,0])
-
-#Se convierten las listas en array 1-Dimensión
-entrenar_array = np.array(entrenar_list)
-prueba_array = np.array(prueba_list)
-print(entrenar_array.shape) #Se comprueba que es un array 1D
-print(prueba_array.shape) #Se comprueba que es un array 1D
-
-#Se convierten los array 1-D a 3-Dimensiones para el input del formato LSTM
-entrenar_array = np.reshape(entrenar_array, (1, entrenar_array.shape[0], 1))
-prueba_array = np.reshape(prueba_array, (1, prueba_array.shape[0], 1))
-print(entrenar_array.shape) #Se comprueba que es un array 3D
-print(prueba_array.shape) #Se comprueba que es un array 3D
-
+verbose, epochs, batch_size = 1, 1, 1
+n_timesteps, n_features, n_outputs = train_x_r.shape[1], train_x_r.shape[2], train_y_r.shape[1]
 ```
 
 #### 4.4 Creación del modelo LSTM
+
+##### Modelo A:
+
+Modelo A, se ajustó mejor la predicción. Es el que se implementa en este proyecto.
 
 ```{python}
 #Inicialización del modelo
 model = Sequential()
 
 #Se agrega una capa interna LSTM 
-#model.add(LSTM(units=30, return_sequences=True, input_shape=(entrenar_array.shape[0], 1)))
-model.add(LSTM(units=30, return_sequences=True, input_shape=(300, 1)))
-
-#_________________________________________________________________________________________________
-#-Es posible agregar más capas internas LSTM pero incrementa el tiempo de entrenamiento, aunque puede mejorar aproximación
-#-Además, entre más capas internas en la red, nos adentramos en el campo del Deep Learning
-
-model.add(Dropout(0.2)) #Evita que se traslapen las capas, en caso de haber más de una
-
-#-Capa 2 LSTM
-model.add(LSTM(units=30, return_sequences=True))
+model.add(LSTM(30, return_sequences=False, activation='relu', input_shape=(n_timesteps, n_features)))
 model.add(Dropout(0.2))
-
-#-Capa 3 LSTM
-model.add(LSTM(units=30, return_sequences=True))
-model.add(Dropout(0.2))
-#_________________________________________________________________________________________________
 
 #Se agrega la capa externa de salida
-model.add(Dense(units=1)) #1: La salida esperada en de una dimensión/Dense une los varios layers o capas
+model.add(Dense(n_outputs, activation='relu'))
+```
+
+##### Modelo B:
+
+EJEMPLO. Es posible agregar más capas internas LSTM pero incrementa el tiempo de entrenamiento, aunque puede o no mejorar la aproximación. Además, entre más capas internas en la red, nos adentramos en el campo del Deep Learning. El Modelo B no fue implementado ya que las predicciones se ajustaban más con solo una capa LSTM (Modelo A).
+
+```{python eval=FALSE}
+
+#Inicialización del modelo
+model_B = Sequential()
+
+#-Capa 1 LSTM: Se agrega una capa interna LSTM, se debe especificar el input_shape solo en la primera
+model_B.add(LSTM(30, return_sequences=True, activation='relu', input_shape=(n_timesteps, n_features)))
+model_B.add(Dropout(0.2))
+
+#-Capa 2 LSTM
+model_B.add(LSTM(50, return_sequences=True, activation='relu'))
+model_B.add(Dropout(0.2))
+
+#-Capa 3 LSTM
+model_B.add(LSTM(50, activation='relu'))
+model_B.add(Dropout(0.2))
+
+#Se agrega la capa externa de salida
+model_B.add(Dense(n_outputs, activation='relu'))
 
 ```
 
 #### 4.5 Compilar/optimizar modelo LSTM
 
 ```{python}
-model.compile(optimizer='rmsprop', loss='mse')
-model.fit(X_train,Y_train,epochs=20,batch_size=32)
+
+model.compile(loss='mse', optimizer='adam')
+# fit network
+model.fit(train_x_r, train_y_r, epochs=epochs, batch_size=batch_size, verbose=verbose)
+
+#Se despliega el modelo implementado, Modelo A
+model.summary()
+```
+
+#### 4.6 Datos para el test
+
+```{python}
+
+pais = ['Costa Rica']
+#datos_pais_test = SeleccionarPaisesAcumulados(CargarArchivo(url,online=True), pais)
+datos_pais_test = SeleccionarPaisesDiarios(CargarArchivo(url,online=True), paises)
+test_x   = datos_pais_test.iloc[:,-(dias_pronostico+dias_disponibles):-dias_pronostico].to_numpy()
+test_x_s = sc_in.transform(test_x)
+test_x_r = test_x.reshape(test_x_s.shape[0],test_x_s.shape[1],1)
+
+```
+
+Grafica de Datos Reales utilizados para entrenar el Modelo LSTM
+
+```{python}
+for i in test_x:
+  plt.plot(i)
+```
+
+#### 4.7 Predicción de datos y tratamiento de los datos obtenidos
+
+```{python}
+
+prediction = model.predict(test_x_r)
+
+print(prediction.shape)
+print(prediction)
+prediction_rescaled = sc_out.inverse_transform(prediction)
+print(prediction_rescaled)
+
+test_y = datos_pais.iloc[:,-dias_pronostico:].to_numpy()
+
+print(prediction)
+print(test_y)
+
 ```
 
 
+#### 4.8 Resuttados obtenidos
 
-#### 4.6 Predicción de datos
+Grafica de Datos de Predicción vs Datos Reales correspondientes a ese mismo periodo
 
+```{python}
 
+plt.figure("Resultados")
+plt.plot(test_y[0])
+plt.plot(prediction_rescaled[0])
+plt.legend(("Real", "Pred"))
+plt.show()
+plt.close()
 
+```
 
-#### 4.7 Test de los datos reales con los aproximados
+Grafica de Datos de Predicción vs Datos Reales TOTALES, todo el archivo
+
+```{python}
+plt.figure("Resultados General Costa Rica")
+n_fechas = datos_pais_test.shape[1]
+x_eje_r = list(range(0, n_fechas))
+x_eje_p = list(range(n_fechas-dias_pronostico, n_fechas))
+plt.plot(x_eje_r, datos_pais_test.loc[pais[0]])
+plt.plot(x_eje_p, prediction_rescaled[0])
+plt.legend(("Real", "Pred"))
+plt.show()
+plt.close()
+
+```
 
 
 
