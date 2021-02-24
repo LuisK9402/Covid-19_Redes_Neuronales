@@ -59,7 +59,9 @@ Luego, se instala Tensorflow con el siguiente comando:
 pip3 install tensorflow
 ```
 
-## Introducción
+## Resumen
+
+En este proyecto se hace un estudio del campo del Machine Learning, utilizando redes neuronales para la predicción de datos a partir del repositorio: COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University. Se hace un tratamiento inicial de los datos y se presentan gráficamente. Posteriormente, se hace una proyección de casos de Covid-19, específicamente para Costa Rica, en donde se entrena una red neuronal a partir de una sección de los datos reales y con estos se hace la predicción a través de la red neuronal. Finalmente se comparan los datos proyectados con los datos reales para ese mismo periodo del tiempo. 
 
 ## Conceptos Claves
 
@@ -178,15 +180,71 @@ La función de activación se aplica justo antes de la salida
 
 ### - Recurrent Neural Network (RNN)
 
+Las Redes Neuronales Recurrentes (RNN), no posee una estructura de capas definida, sino que las conexiones entre las neuronas son de forma arbitraria. Esto en su representación más simple, aunque se pueden crear redes cíclicas más complejas para crear una red con memoria para casos más complejos. Este tipo de redes neuronales son muy potentes para el análisis de secuencias o patrones de datos, como textos, sonidos, videos. En la siguiente figura se muestra la arquitectura de una red neuronal recurrente sencilla. 
+
+<p align="center">
+  <img width="600px" src="images/A1_RNN.png">
+</p>
+
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://www.diegocalvo.es/wp-content/uploads/2017/07/red-neuronal-recurrente.png</i></p>
+
+Dentro de las Redes Neuronales Recurrentes se encuentran diversos tipos, según el número de capas ocultas y la forma en que realizan retropropagación. Seguidamente se mencionan los más comunes. 
+
+##### **Tipos de Redes Neuronales Recurrentes**:
+- Simple Recurrent Network (SRN/RNN)
+- Long Short-Term Memory (LSTM)
+- Gated Recurrent Unit (GRU)
+
 ### - Long Short-Term Memory (LSTM)
+
+Las redes LSTM son un tipo de red neuronal recurrente, con la característica que contiene una unidad de memoria. Esta unidad contiene tres puertas controladoras del cómo fluye la información dentro o fuera de ella. Seguidamente se mencionan estos tres elementos:
+
+- Puerta de entrada: Controla los datos nuevos que pueden entrar en la memoria.
+- Puerta de olvido: Controla los datos que se mantienen en memoria o si se descartan, para tener espacio para nueva información. Dependiendo de la importancia de los datos.
+- Puerta de salida: Controla cuales datos almacenados son requeridos como un resultado de salida.
+
+
+<p align="center">
+  <img width="600px" src="images/A2_LSTM.png">
+</p>
+
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://www.diegocalvo.es/wp-content/uploads/2018/12/Red-LSTM.png</i></p>
 
 ### - RNN vs LSTM
 
-![Diagrama](images/RedNeuronal.png)
+
+Las Redes Neuronales Recurrentes (RNN) convencionales, a la hora del entrenamiento los gradientes retropropagados tienden a crecer mucho o incluso se pueden desvanecer con el tiempo. Esto se debe a que el gradiente depende de los errores presentes y pasados, pero estos últimos no se toman por la RNN. Para datos que se extienden en un largo periodo de tiempo, se da una acumulación grande de errores haciendo que este tipo de redes sean muy poco recomendables para análisis de series de datos por un largo periodo de tiempo. Es precisamente esto lo que vienen a solucionar las redes LSTM, ese cálculo y optimización del error a través de datos en un largo periodo de tiempo, es por ello que en este proyecto se implementó un modelo LSTM considerando que los datos sobre el Covid-19 son de un periodo un poco mayor a un año. En la imagen se muestra la diferencia en la complejidad de la arquitectura de ambos tipos de unidades.
+
+<p align="center">
+  <img width="600px" src="images/A3_RvsL.png">
+</p>
+
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://i.stack.imgur.com/Iv3nU.png</i></p>
+
+
 
 ## Bibliotecas Implementadas
 
+Muchas son las bilbiotecas disponibles para implementar proyectos de Machine Learning en Python. En este proyecto se implementó una solución utilizando TensorFlow y Keras, además de las ya estudiadas en el curso. A continuación se muestran algunas de las bibliotecas más utilizadas en este campo.
+
+<p align="center">
+  <img width="600px" src="images/A4_Biblios.png">
+</p>
+
+</p>
+<p align="center" style="font-size:12px"><i>Imagen de: https://miro.medium.com/max/700/1*RIrPOCyMFwFC-XULbja3rw.png</i></p>
+
 ### - TensorFlow
+
+TensorFlow es una biblioteca de código abierto, un conjunto de herramientas, desarrollado por Google para construir y entrenar redes neuronales para detectar patrones, proyecciones y correlacionar de forma automática el razonamiento del ser humano para poder ser "implementado". En primera instancia era para satisfacer las necesidades de la empresa, pero luego fue puesta a disposición del público el 9 de noviembre del 2015 y es una de las principales herramientas utilizadas en investigación y en el campo del Machine Learning alrededor del mundo. Algunas de las aplicaciones de TensorFlow son:
+
+- Mejora de fotografías
+- Diagnóstico médico
+- Procesamiento de imágenes
+- Proyecciones de datos en el tiempo
 
 ### - Keras
 
@@ -258,7 +316,7 @@ def SeleccionarPaisesAcumulados(datos, paises=''):
         return datos
 ```
 
-#### c. Generar los datos y gráficos de los datos obtenidos ACUMULADOS:
+#### c. Generar los datos y gráficos de los datos obtenidos Acumulados:
 
 Se genera una función general para analizar los datos acumulados que se tienen para hacer las predicciones.
 
@@ -325,7 +383,7 @@ def SeleccionarPaisesDiarios(datos, paises=''):
 
 
 
-#### e. Generar los datos y gráficos de los datos obtenidos DIARIOS:
+#### e. Generar los datos y gráficos de los datos obtenidos Diarios:
 
 Se genera una función general para analizar los datos diarios que se tienen para hacer las predicciones.
 
@@ -431,7 +489,7 @@ def multi_walk_forward_format(train_data, in_size, out_size, step=1):
     return x_np,y_np
 ```
 
-### 3. Se imprime en consola la información para los casos confirmados, de muerte y recuperados, tanto acumulados como diarios.
+### 3. Análisis de los datos: Casos confirmados, de muerte y recuperados, tanto acumulados como diarios.
 
 ```{python}
 # Main Parte 3: Se visualizan los datos
@@ -474,7 +532,7 @@ En esta sección se procede a implementar una Red Neuronal. Primero se seleccion
 #### 4.1 Selecionar datos para entrenar y datos de prueba 
 
 ```{python}
-# Se escoge cúales datos se utilizarán (Acumulados, defunciones o recuperados)
+# Se escoge cúales datos se utilizarán (confirmados, defunciones o recuperados)
 url = url1
 #url = url2
 #url = url3
@@ -697,15 +755,10 @@ plt.close()
 
 \[1] Saffa, F. (2020). "Exploring the Link between COVID-19 and Depression using Neural Networks". Recuperado de: https://towardsdatascience.com/exploring-the-link-between-covid-19-and-depression-using-neural-networks-469030112d3d
 
-\[2] COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University. Recuperado de: https://github.com/CSSEGISandData/COVID-19  
+\[2] "COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University". Recuperado de: https://github.com/CSSEGISandData/COVID-19  
 
-\[3] Dong E, Du H, Gardner L. An interactive web-based dashboard to track COVID-19 in real time. Lancet Inf Dis. 20(5):533-534. doi: 10.1016/S1473-3099(20)30120-1
+\[3] Dong E, Du H, Gardner L. "An interactive web-based dashboard to track COVID-19 in real time". Lancet Inf Dis. 20(5):533-534. doi: 10.1016/S1473-3099(20)30120-1
 
-Referencia general sobre RNN vs LSTM(No usada en código):
-https://medium.com/microsoftazure/neural-networks-for-forecasting-financial-and-economic-time-series-6aca370ff412
+\[4] Calvo, D. (2018)."Red Neuronal Recurrente – RNN". Recuperado de: https://www.diegocalvo.es/red-neuronal-recurrente/
 
-TensorFlow Time series forecasting:
-https://www.tensorflow.org/tutorials/structured_data/time_series
 
-Profe en clase:
-https://www.analyticsvidhya.com/blog/2018/02/time-series-forecasting-methods/
